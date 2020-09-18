@@ -1,6 +1,7 @@
 import 'package:TourismVR_Remote/api_provider.dart';
 import 'package:TourismVR_Remote/auth_code_form.dart';
 import 'package:TourismVR_Remote/client_controller_form.dart';
+import 'package:TourismVR_Remote/websocket_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -43,15 +44,21 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  Widget _buildBody(BuildContext context, APIProvider provider, Widget child) {
-    if (provider.isAuthorized) {
-      return ClientControllerForm(
-        playVideoById: (int videoId) => provider.playVideoById(videoId),
-        disconnect: () => provider.disconnect(),
+  Widget _buildBody(BuildContext context, APIProvider apiProvider, Widget child) {
+    if (apiProvider.isAuthorized) {
+      return ChangeNotifierProvider<WebsocketProvider>(
+        create: (BuildContext context) => WebsocketProvider(),
+        child: Consumer<WebsocketProvider>(
+          builder: (BuildContext context, WebsocketProvider websocketProvider, Widget child) =>
+            ClientControllerForm(
+              apiProvider: apiProvider,
+              websocketProvider: websocketProvider,
+            ),
+        ),
       );
     } else {
       return AuthCodeForm(
-        onSubmit: (String token) => provider.authenticate(token),
+        onSubmit: (String token) => apiProvider.authenticate(token),
       );
     }
   }

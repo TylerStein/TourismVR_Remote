@@ -1,13 +1,15 @@
+import 'package:TourismVR_Remote/api_provider.dart';
+import 'package:TourismVR_Remote/websocket_provider.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-class ClientControllerForm extends StatelessWidget {
-  final Function(int) playVideoById;
-  final Function() disconnect;
+class ClientControllerForm extends StatelessWidget {  
+  final APIProvider apiProvider;
+  final WebsocketProvider websocketProvider;
 
   ClientControllerForm({
-    @required this.playVideoById,
-    @required this.disconnect,
+    @required this.apiProvider,
+    @required this.websocketProvider,
   }) {
     //
   }
@@ -31,7 +33,35 @@ class ClientControllerForm extends StatelessWidget {
               ),
               child: Text('Play Video 1'),
               onPressed: () {
-                playVideoById(1);
+                apiProvider.playVideoById(1);
+                websocketProvider.disconnect();
+                websocketProvider.connect(WebsocketProvider.wsUrl, authToken: apiProvider.token);
+              },
+            ),
+          ],
+        ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            RaisedButton(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(6.0),
+                side: BorderSide(color: Theme.of(context).primaryColor),
+              ),
+              child: Text('Play'),
+              onPressed: () {
+                websocketProvider.send('play', 'play');
+              },
+            ),
+            RaisedButton(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(6.0),
+                side: BorderSide(color: Theme.of(context).primaryColor),
+              ),
+              child: Text('Stop'),
+              onPressed: () {
+                websocketProvider.send('stop', 'stop');
               },
             ),
           ],
@@ -44,10 +74,23 @@ class ClientControllerForm extends StatelessWidget {
           ),
           child: Text('Disconnect'),
           onPressed: () {
-            disconnect();
+            websocketProvider.disconnect();
+            apiProvider.disconnect();
           },
         ),
         Spacer(),
+        StreamBuilder<String>(
+          stream: websocketProvider?.wsStream,
+          builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
+            return Column(
+              children: [
+                Text('state: ${snapshot?.connectionState?.toString()}'),
+                Text('data: ${snapshot?.data?.toString()}'),
+                Text('error: ${snapshot?.error?.toString()}'),
+              ],
+            );
+          },
+        )
       ],
     );
   }

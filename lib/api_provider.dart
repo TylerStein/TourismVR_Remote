@@ -20,7 +20,7 @@ class APIProvider extends ChangeNotifier {
     }
   }
 
-  Future<bool> disconnect() async {
+  void disconnect() {
     this.token = null;
     notifyListeners();
   }
