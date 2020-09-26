@@ -4,12 +4,12 @@ import 'package:flutter/material.dart';
 class NavScaffoldItem {
   final String title;
   final Widget icon;
-  final Widget child;
+  final Widget Function(BuildContext context) builder;
 
   NavScaffoldItem({
     @required this.title,
     @required this.icon,
-    @required this.child,
+    @required this.builder,
   });
 }
 
@@ -51,11 +51,11 @@ class NavScaffoldState extends State<NavScaffold> {
     return Scaffold(
       appBar: buildAppBar(),
       bottomNavigationBar: buildBottomNavigationBar(),
-      body: buildPageView(),
+      body: buildPageView(context),
     );
   }
 
-  Widget buildPageView() {
+  Widget buildPageView(BuildContext context) {
     return PageView(
       controller: _pageController,
       onPageChanged: (index) {
@@ -66,7 +66,7 @@ class NavScaffoldState extends State<NavScaffold> {
           }
         });
       },
-      children: widget.pages.map((page) => page.child).toList(),
+      children: widget.pages.map((page) => page.builder(context)).toList(),
     );
   }
 

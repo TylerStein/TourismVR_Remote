@@ -1,11 +1,5 @@
-import 'package:TourismVR_Remote/api_provider.dart';
-import 'package:TourismVR_Remote/auth_code_form.dart';
-import 'package:TourismVR_Remote/client_controller_form.dart';
-import 'package:TourismVR_Remote/pages/home.dart';
-import 'package:TourismVR_Remote/pages/library.dart';
-import 'package:TourismVR_Remote/websocket_provider.dart';
+import 'package:TourismVR_Remote/pages/home_page.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 
 void main() {
   runApp(MyApp());

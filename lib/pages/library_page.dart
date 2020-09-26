@@ -1,37 +1,41 @@
+import 'package:TourismVR_Remote/models/video_model.dart';
+import 'package:TourismVR_Remote/providers/library_provider.dart';
 import 'package:TourismVR_Remote/widgets/media_card.dart';
 import 'package:TourismVR_Remote/widgets/search_fab.dart';
 import 'package:flutter/material.dart';
 
 class LibraryPage extends StatefulWidget {
+  final LibraryAPIProvider libraryAPIProvider;
   final ValueNotifier<int> pageChangeNotifier;
-  final List<String> entries = const [
-    'A1',
-    'A2',
-    'A3',
-    'B1',
-    'B2',
-    'B3',
-    'C1',
-    'C2',
-    'C3',
-  ];
 
   LibraryPage({
     @required this.pageChangeNotifier,
+    @required this.libraryAPIProvider,
   });
 
   @override
-  LibraryPageState createState() => LibraryPageState(initialEntries: entries);
+  LibraryPageState createState() => LibraryPageState();
 }
 
 class LibraryPageState extends State<LibraryPage> {
-  List<String> filteredEntries;
+  List<VideoModel> filteredEntries;
   String searchValue;
 
-  LibraryPageState({
-    List<String> initialEntries = const [],
-  }) {
-    filteredEntries = List.from(initialEntries);
+  LibraryPageState();
+
+  @override
+  void initState() {
+    filteredEntries = widget.libraryAPIProvider.videos ?? [];
+    if (widget.libraryAPIProvider.videos.isEmpty) {
+      widget.libraryAPIProvider.loadVideos()
+        .then((value) => {
+          setState(() {
+            filteredEntries = widget.libraryAPIProvider.videos;
+          })
+        })
+        .catchError((error) => print(error));
+    }
+    super.initState();
   }
 
   @override
@@ -55,8 +59,8 @@ class LibraryPageState extends State<LibraryPage> {
         if (searchValue != value) {
           setState(() {
             searchValue = value;
-            filteredEntries = widget.entries.where(
-              (entry) => entry.toLowerCase().contains(searchValue.toLowerCase())
+            filteredEntries = widget.libraryAPIProvider.videos.where(
+              (entry) => entry.name.toLowerCase().contains(searchValue.toLowerCase())
             ).toList();
           });
         }
@@ -70,10 +74,10 @@ class LibraryPageState extends State<LibraryPage> {
       children: List.generate(
         filteredEntries.length,
         (index) => MediaCard(
-          title: filteredEntries[index],
-          subtitle: 'Subtitle Here',
+          title: filteredEntries[index].name,
+          subtitle: filteredEntries[index].location,
           onTap: () {
-            print('onTap $index');
+            print('onTap ${filteredEntries[index].name}');
           },
         ),
         growable: false

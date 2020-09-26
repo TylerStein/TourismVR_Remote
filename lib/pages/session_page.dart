@@ -1,4 +1,3 @@
-import 'package:TourismVR_Remote/widgets/search_fab.dart';
 import 'package:code_input/code_input.dart';
 import 'package:flutter/material.dart';
 
