@@ -13,55 +13,54 @@ class TourismVRHomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (BuildContext context) => LibraryAPIProvider(authAPIProvider: null),
-      child: NavScaffold(
-        disconnect: () {
-          print('disconnect');
-        },
-        initialPageIndex: 0,
-        onPageChanged: (index) {
-          pageChangeNotifier.value = index;
-        },
-        pages: [
-          NavScaffoldItem(
-            title: 'Session',
-            icon: const Icon(Icons.play_arrow),
-            builder: (BuildContext context) => SessionPage(
-              pageChangeNotifier: pageChangeNotifier,
-            ),
-          ),
-          NavScaffoldItem(
-            title: 'Library',
-            icon: const Icon(Icons.video_library),
-            builder: (BuildContext context) => Consumer<LibraryAPIProvider>(
-              builder: (BuildContext context, LibraryAPIProvider libraryAPIProvider, Widget child) =>
-                LibraryPage(
-                  pageChangeNotifier: pageChangeNotifier,
-                  libraryAPIProvider: libraryAPIProvider,
-                ),
-            ),
-          ),
-        ],
+    return ChangeNotifierProvider<AuthAPIProvider>(
+      create: (BuildContext context) => AuthAPIProvider(),
+      child: Consumer<AuthAPIProvider>(
+        builder: (BuildContext context, AuthAPIProvider authAPIProvider, Widget child) => MultiProvider(
+          providers: [
+            ChangeNotifierProvider(create: (BuildContext context) => LibraryAPIProvider(authAPIProvider: authAPIProvider)),
+            ChangeNotifierProvider(create: (BuildContext context) => ControlAPIProvider(authAPIProvider: authAPIProvider)),
+          ],
+          child: buildNavScaffold(authAPIProvider),
+        ),
       ),
     );
   }
 
-  // Widget buildProviders({
-  //   @required Widget child
-  // }) {
-  //   return ChangeNotifierProvider(
-  //     create: (context) => AuthAPIProvider(),
-  //     child: Consumer<AuthAPIProvider>(
-  //       builder: (BuildContext context, AuthAPIProvider authAPIProvider, Widget child) =>
-  //         MultiProvider(
-  //           providers: [
-  //             ChangeNotifierProvider<LibraryAPIProvider>(create: (context) => LibraryAPIProvider(authAPIProvider: authAPIProvider)),
-  //             ChangeNotifierProvider<ControlAPIProvider>(create: (context) => ControlAPIProvider(authAPIProvider: authAPIProvider)),
-  //           ],
-  //           child: child,
-  //         ),
-  //     ),
-  //   );
-  // }
+  Widget buildNavScaffold(AuthAPIProvider authAPIProvider) {
+    return NavScaffold(
+      disconnect: () {
+        print('disconnect');
+      },
+      initialPageIndex: 0,
+      onPageChanged: (index) {
+        pageChangeNotifier.value = index;
+      },
+      pages: [
+        NavScaffoldItem(
+          title: 'Session',
+          icon: const Icon(Icons.play_arrow),
+          builder: (BuildContext context) => Consumer<ControlAPIProvider>(
+            builder: (BuildContext context, ControlAPIProvider controlAPIProvder, Widget child) => SessionPage(
+              controlAPIProvider: controlAPIProvder,
+              authAPIProvider: authAPIProvider,
+              pageChangeNotifier: pageChangeNotifier,
+            ),
+          ),
+        ),
+        NavScaffoldItem(
+          title: 'Library',
+          icon: const Icon(Icons.video_library),
+          builder: (BuildContext context) => Consumer2<LibraryAPIProvider, ControlAPIProvider>(
+            builder: (BuildContext context, LibraryAPIProvider libraryAPIProvider, ControlAPIProvider controlAPIProvider, Widget child) =>
+              LibraryPage(
+                pageChangeNotifier: pageChangeNotifier,
+                libraryAPIProvider: libraryAPIProvider,
+                controlAPIProvider: controlAPIProvider,
+              ),
+          ),
+        ),
+      ],
+    );
+  }
 }

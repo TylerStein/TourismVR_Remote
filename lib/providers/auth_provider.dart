@@ -6,7 +6,7 @@ import 'package:flutter/cupertino.dart';
 
 class AuthAPIProvider extends ChangeNotifier {
   String _token;
-  String get token => '$_token';
+  String get token => _token != null ? '$_token' : null;
   bool get isAuthorized => token != null;
 
   AuthAPIProvider({
@@ -39,8 +39,9 @@ class AuthAPIProvider extends ChangeNotifier {
       Response response = await Dio().post(
         url,
         data: data,
-        options: Options(
+        options: RequestOptions(
           contentType: 'application/json',
+          connectTimeout: 1000,
         ),
       );
 

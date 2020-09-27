@@ -30,9 +30,10 @@ class LibraryAPIProvider extends ChangeNotifier {
     try {
       Response response = await Dio().get(
         url,
-        options: Options(
+        options: RequestOptions(
           // headers: { 'authorization': authAPIProvider.token },
           responseType: ResponseType.json,
+          connectTimeout: 1000,
         ),
       );
 

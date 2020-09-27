@@ -7,6 +7,9 @@ import 'package:flutter/cupertino.dart';
 
 class ControlAPIProvider extends ChangeNotifier {
   AuthAPIProvider authAPIProvider;
+
+  bool get isPaired => authAPIProvider.isAuthorized;
+
   ControlAPIProvider({
     @required this.authAPIProvider,
   });

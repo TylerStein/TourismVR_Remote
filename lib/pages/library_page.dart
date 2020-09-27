@@ -1,4 +1,5 @@
 import 'package:TourismVR_Remote/models/video_model.dart';
+import 'package:TourismVR_Remote/providers/control_provider.dart';
 import 'package:TourismVR_Remote/providers/library_provider.dart';
 import 'package:TourismVR_Remote/widgets/media_card.dart';
 import 'package:TourismVR_Remote/widgets/search_fab.dart';
@@ -6,10 +7,12 @@ import 'package:flutter/material.dart';
 
 class LibraryPage extends StatefulWidget {
   final LibraryAPIProvider libraryAPIProvider;
+  final ControlAPIProvider controlAPIProvider;
   final ValueNotifier<int> pageChangeNotifier;
 
   LibraryPage({
     @required this.pageChangeNotifier,
+    @required this.controlAPIProvider,
     @required this.libraryAPIProvider,
   });
 
@@ -152,7 +155,16 @@ class LibraryPageState extends State<LibraryPage> {
           title: filteredEntries[index].name,
           subtitle: filteredEntries[index].location,
           onTap: () {
-            print('onTap ${filteredEntries[index].name}');
+            if (widget.controlAPIProvider.isPaired) {
+              widget.controlAPIProvider.playVideoById(filteredEntries[index].id);
+            } else {
+              Scaffold.of(context).showSnackBar(SnackBar(
+                behavior: SnackBarBehavior.floating,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
+                elevation: 4,
+                content: Text('Start a Pair Session to Play Videos', textAlign: TextAlign.center,),
+              ));
+            }
           },
         ),
         growable: false
