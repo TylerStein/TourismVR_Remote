@@ -15,6 +15,11 @@ class MediaCard extends StatelessWidget {
     this.padding = const EdgeInsets.all(8.0),
   }) : super(key: key);
 
+  factory MediaCard.blank() => MediaCard(
+    title: null,
+    subtitle: null,
+  );
+
   @override
   Widget build(BuildContext context) {
     return Material(
@@ -29,7 +34,7 @@ class MediaCard extends StatelessWidget {
               Flexible(
                 child: Container(
                   margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-                  color: Colors.red[300],
+                  color: title != null ? Colors.red[300] : Colors.grey[400],
                   alignment: Alignment.center,
                   child: Icon(Icons.play_arrow, color: Colors.white,),
                 ),
@@ -42,10 +47,14 @@ class MediaCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       Flexible(
-                        child: Text(title, style: Theme.of(context).textTheme.headline6,),
+                        child: title != null
+                          ? Text(title, style: Theme.of(context).textTheme.headline6,)
+                          : Container(color: Colors.grey[400], height: 18,),
                       ),
                       Flexible(
-                        child: Text(subtitle, style: Theme.of(context).textTheme.subtitle1,),
+                        child: subtitle != null
+                          ? Text(subtitle ?? '', style: Theme.of(context).textTheme.subtitle1,)
+                          : Container(color: Colors.grey[400], height: 16, margin: const EdgeInsets.only(top: 8)),
                       )
                     ],
                   ),

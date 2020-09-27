@@ -18,36 +18,84 @@ class LibraryPage extends StatefulWidget {
 }
 
 class LibraryPageState extends State<LibraryPage> {
-  List<VideoModel> filteredEntries;
+  List<VideoModel> filteredEntries = [];
   String searchValue;
 
   LibraryPageState();
 
   @override
   void initState() {
-    filteredEntries = widget.libraryAPIProvider.videos ?? [];
-    if (widget.libraryAPIProvider.videos.isEmpty) {
-      widget.libraryAPIProvider.loadVideos()
-        .then((value) => {
-          setState(() {
-            filteredEntries = widget.libraryAPIProvider.videos;
-          })
-        })
-        .catchError((error) => print(error));
-    }
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      widget.libraryAPIProvider.reload()
+        .then((value) {
+          reloadAndFilter();
+        });
+    });
+
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
     return Stack(
+      alignment: Alignment.center,
+      children: [
+        // Visibility(
+        //   visible: widget.libraryAPIProvider.isLoading,
+        //   child: CircularProgressIndicator(),
+        // ),
+        // Visibility(
+        //   visible: widget.libraryAPIProvider.isLoading,
+        //   child: Container(color: Colors.black38),
+        // ),
+        RefreshIndicator(
+          onRefresh: reloadAndFilter,
+          child: widget.libraryAPIProvider.lastResponse?.error != null
+            ? buildErrorDisplay()
+            : widget.libraryAPIProvider.isLoading == false
+              ? buildLibraryList()
+              : buildMockLibraryList(),
+        ),
+        Visibility(
+          visible: widget.libraryAPIProvider.lastResponse?.value != null,
+          child: Positioned(
+            bottom: 16,
+            right: 16,
+            child: buildSearch(),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget buildDisplay() {
+    return Stack(
       children: [
         buildLibraryList(),
-        Positioned(
-          bottom: 16,
-          right: 16,
-          child: buildSearch(),
-        ),
+      ],
+    );
+  }
+
+  Widget buildErrorDisplay() {
+    return ListView(
+      shrinkWrap: true,
+      physics: AlwaysScrollableScrollPhysics(),
+      children: [
+        Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Icon(Icons.error, size: 48),
+            Padding(
+              padding: const EdgeInsets.only(top: 24),
+              child: Text('API Error'),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(top: 24),
+              child: Text('Pull down to refresh'),
+            ),
+          ],
+        )
       ],
     );
   }
@@ -57,19 +105,46 @@ class LibraryPageState extends State<LibraryPage> {
       closeSearchNotifier: widget.pageChangeNotifier,
       onChange: (String value) {
         if (searchValue != value) {
-          setState(() {
-            searchValue = value;
-            filteredEntries = widget.libraryAPIProvider.videos.where(
-              (entry) => entry.name.toLowerCase().contains(searchValue.toLowerCase())
-            ).toList();
-          });
+          filterEntries(value);
         }
       },
     );
   }
 
+  Future<void> reloadAndFilter([String search]) async {
+    await widget.libraryAPIProvider.reload();
+    filterEntries(search);
+  }
+
+  void filterEntries([String search]) {
+    setState(() {
+      if (search != null) {
+        searchValue = search;
+      }
+
+      List<VideoModel> unfiltered = widget.libraryAPIProvider.lastResponse?.value ?? [];
+      if (searchValue != null) {
+        filteredEntries = unfiltered.where((entry) => entry.name.toLowerCase().contains(searchValue.toLowerCase())).toList();
+      } else {
+        filteredEntries = unfiltered;
+      }
+    });
+  }
+
+  Widget buildMockLibraryList() {
+    return ListView(
+      itemExtent: 128,
+      children: List.generate(
+        12,
+        (index) => MediaCard.blank(),
+        growable: false
+      ),
+    );
+  }
+
   Widget buildLibraryList() {
     return ListView(
+      physics: AlwaysScrollableScrollPhysics(),
       itemExtent: 128,
       children: List.generate(
         filteredEntries.length,
